@@ -1,6 +1,33 @@
 import subprocess
 import os
 from PIL import Image, ImageDraw, ImageFont
+from openai import OpenAI
+
+client = OpenAI(api_key='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')
+import requests
+def get_quotes(subject, num_quotes=100):
+    # Set your OpenAI API key
+
+    # Initialize an empty list to store the quotes
+    quotes = []
+
+
+
+    response = client.completions.create(model="davinci-002",prompt=f"Generate 10 quotes about '{subject}':",
+    max_tokens=150, 
+ 
+   )
+
+ 
+    print(response.choices[0].text.strip().split("\n"))
+    # Return the list of quotes
+    return quotes.extend(response.choices[0].text.strip().split("\n")) # Return only the required number of quotes
+
+# Example usage:
+subject = "programming"  # Change this to your desired subject
+quotes = get_quotes(subject)
+print(quotes)
+
 
 def delete_wallpaper():
     current_wallpaper_path = subprocess.run(["osascript", "-e", "tell application \"Finder\" to get POSIX path of (get desktop picture as alias)"], capture_output=True, text=True).stdout.strip()
@@ -21,9 +48,9 @@ def add_quote_to_image(image_path, quote, corner="bottom-right"):
     font_size = 46  # Change this to adjust the font size
     font = ImageFont.truetype("/Library/Fonts/Arial.ttf", font_size) 
 
-   
+
     text_bbox = draw.textbbox((0, 0), quote, font=font)
-   
+
     text_width = text_bbox[2] - text_bbox[0]
     text_height = text_bbox[3] - text_bbox[1]
 
