@@ -5,7 +5,7 @@ from PIL import Image, ImageDraw, ImageFont
 from openai import OpenAI
 import schedule
 import time
-client = OpenAI(api_key='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')
+client = OpenAI(os.environ.get("API_KEY"))
 quotes_to_select_from = []
 
 
