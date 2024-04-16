@@ -1,10 +1,22 @@
 import subprocess
 import os
+import random
 from PIL import Image, ImageDraw, ImageFont
 from openai import OpenAI
-
+import schedule
+import time
 client = OpenAI(api_key='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')
-import requests
+quotes_to_select_from = []
+
+
+def daily_task():
+    # Replace this with the task you want to perform
+    print("Executing daily task at midnight")
+
+# Schedule the task to run every day at 24:00 (midnight)
+schedule.every().day.at("00:00").do(daily_task)
+
+
 def get_quotes(subject, num_quotes=100):
     # Set your OpenAI API key
 
@@ -13,22 +25,24 @@ def get_quotes(subject, num_quotes=100):
 
 
 
-    response = client.completions.create(model="davinci-002",prompt=f"Generate 10 quotes about '{subject}':",
-    max_tokens=150, 
+    response = client.completions.create(model="gpt-3.5-turbo-instruct",prompt=f"give 10 quotes on {subject}",
+    max_tokens=250, 
  
    )
 
  
-    print(response.choices[0].text.strip().split("\n"))
-    # Return the list of quotes
-    return quotes.extend(response.choices[0].text.strip().split("\n")) # Return only the required number of quotes
+    for quotes in response.choices[0].text.strip().split("\n"):
+        print(quotes)
+        quotes_to_select_from.append(quotes[2:])
+    
 
 # Example usage:
-subject = "programming"  # Change this to your desired subject
+subject = "bible verses"  # Change this to your desired subject
+
 quotes = get_quotes(subject)
-print(quotes)
 
 
+before_wallpapter_path = subprocess.run(["osascript", "-e", "tell application \"Finder\" to get POSIX path of (get desktop picture as alias)"], capture_output=True, text=True).stdout.strip()
 def delete_wallpaper():
     current_wallpaper_path = subprocess.run(["osascript", "-e", "tell application \"Finder\" to get POSIX path of (get desktop picture as alias)"], capture_output=True, text=True).stdout.strip()
     if current_wallpaper_path != wallpaper:
@@ -71,12 +85,25 @@ def add_quote_to_image(image_path, quote, corner="bottom-right"):
 
 
     draw.text((position), quote, fill=(255, 255, 255), font=font)
-    new_image_path = os.path.splitext(image_path)[0] + "_quote.jpg"
+    new_image_path = os.path.splitext(image_path)[0] + f"_quote{random.randrange(1,50)}.jpg"
     image.save(new_image_path)
     return new_image_path
 # Example usage
 wallpaper = '/Users/edenphillips/Downloads/056 (1).jpg'
-quote = "“I have told you these thine world.”"
+quote = random.choice(quotes_to_select_from)
 chosen_corner = "bottom-right"  # Change this to the desired corner
-new_image_path = add_quote_to_image(wallpaper, quote, corner=chosen_corner)
-set_wallpaper(new_image_path)
+
+
+
+def daily_task():
+    new_image_path = add_quote_to_image(wallpaper, quote, corner=chosen_corner)
+    if wallpaper != before_wallpapter_path:
+        os.remove(before_wallpapter_path)
+    set_wallpaper(new_image_path)
+
+# Schedule the task to run every day at 24:00 (midnight)
+schedule.every().day.at("19:20").do(daily_task)
+
+while True:
+    schedule.run_pending()
+    time.sleep(60)  
