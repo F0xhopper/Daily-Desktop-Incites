@@ -7,24 +7,26 @@ from PIL import Image, ImageDraw, ImageFont
 from openai import OpenAI
 
 class DailyWallpaperChanger:
-    def __init__(self, api_key=None, wallpaper_path=None, chosen_corner="bottom-right",text_colour='white'):
-        self.text_colour = text_colour
-        self.client = OpenAI(api_key=api_key)
+    def __init__(self):
+        self.wallpaper = ''
+        self.quote_topic = ''
+        self.text_color = ''
+        self.chosen_corner = ''
+        self.time_frequency = '12:00'
+        self.client = OpenAI(api_key='asd')
         self.quotes_to_select_from = [
-    "For God so loved the world, that he gave his only Son, that whoever believes in him should not perish but have eternal life. - John 3:16",
-    "Trust in the Lord with all your heart, and do not lean on your own understanding. - Proverbs 3:5",
-    "I can do all things through him who strengthens me. - Philippians 4:13",
-    "The Lord is my shepherd; I shall not want. - Psalm 23:1",
-    "For I know the plans I have for you, declares the Lord, plans for welfare and not for evil, to give you a future and a hope. - Jeremiah 29:11",
-    "But they who wait for the Lord shall renew their strength; they shall mount up with wings like eagles; they shall run and not be weary; they shall walk and not faint. - Isaiah 40:31",
-    "And we know that for those who love God all things work together for good, for those who are called according to his purpose. - Romans 8:28",
-    "The fear of the Lord is the beginning of knowledge; fools despise wisdom and instruction. - Proverbs 1:7",
-    "But seek first the kingdom of God and his righteousness, and all these things will be added to you. - Matthew 6:33",
-    "Be strong and courageous. Do not fear or be in dread of them, for it is the Lord your God who goes with you. He will not leave you or forsake you. - Deuteronomy 31:6"
+    "Pythagorean Theorem: a^2 + b^2 = c^2", 
+    "Quadratic Formula: x = (-b ± √(b² - 4ac)) / (2a)", 
+    "Slope-intercept Form: y = mx + b", 
+    "Area of a Circle: A = πr²", 
+    "Volume of a Sphere: V = (4/3)πr³", 
+    "Newton's Second Law of Motion: F = ma", 
+    "Einstein's Mass-Energy Equivalence: E = mc²", 
+    "Fundamental Theorem of Calculus: ∫(a to b) f(x) dx = F(b) - F(a)", 
+    "Law of Cosines: c² = a² + b² - 2ab cos(C)", 
+    "Normal Distribution Probability Density Function: f(x) = (1 / (σ√(2π))) e^(-((x - μ)² / (2σ²)))"
 ]
 
-        self.wallpaper = wallpaper_path
-        self.chosen_corner = chosen_corner
         self.running = True
 
     def add_newlines(self):
@@ -85,7 +87,7 @@ class DailyWallpaperChanger:
         base_font_size = 21  # Base font size
         font_scaling_factor = min(image.width, image.height) / 1000  # Adjust as needed
 
-        # Adjust font size based on scaling factor
+        # Adjust font size based on scaling factor/Users/edenphillips/Downloads/f4e56a94f2e39a593ab7b170129f1925.jpg
         font_size = int(base_font_size * font_scaling_factor)
 
         font = ImageFont.truetype("/Library/Fonts/Arial.ttf", font_size)
@@ -107,10 +109,10 @@ class DailyWallpaperChanger:
         elif self.chosen_corner == 'random':
             position = random.choice([(int(0.1 * image_width), int(0.1 * image_height)),(int(0.9 * image_width) - text_width, int(0.1 * image_height)),(int(0.1 * image_width), int(0.9 * image_height - text_height)),(int(0.9 * image_width - text_width), int(0.9 * image_height - text_height))])
         
-        if self.text_colour == "random":
+        if self.text_color == "random":
             fill = tuple(random.randint(0, 255) for _ in range(3))  # Generate a random RGB color
         else:
-            fill = self.text_colour 
+            fill = self.text_color 
         draw.text(position, quote, fill=(fill), font=font)
         new_image_path = os.path.splitext(self.wallpaper)[0] + f"_quote{random.randrange(1,50)}.jpg"
         image.save(new_image_path)
@@ -124,6 +126,19 @@ class DailyWallpaperChanger:
         self.set_wallpaper(new_image_path)
 
     def start(self):
+        print("""  ___              _   _  __           ____            _    _              
+    / _ \ _   _  ___ | |_(_)/ _|_   _    |  _ \  ___  ___| | _| |_ ___  _ __  
+    | | | | | | |/ _ \| __| | |_| | | |   | | | |/ _ \/ __| |/ / __/ _ \| '_ \ 
+    | |_| | |_| | (_) | |_| |  _| |_| |   | |_| |  __/\__ \   <| || (_) | |_) |
+    \__\_\\__,_|\___/ \__|_|_|  \__, |___|____/ \___||___/_|\_\\__\___/| .__/ 
+                                |___/_____|                            |_|    
+    """)
+        print('Hello, welcome to quotify_desktop we just need to setup a few of your prefrences before we start.')
+        self.wallpaper = input('Please give the path of the background image you would like to use:')
+        self.quote_topic = input('Please give the topic or subject would you like the quotes to be on:')
+        self.text_color = input('Please give the color you would like the text to be (blue, red, green, white, random):')
+        self.chosen_corner = input('Please give the location on the screen in which you would like the text (top-left, top-right, bottom-left, bottom-right, random):')
+        self.time_frequency = input('Please give the time each day you would like to refresh the quote (00:00):')
         self.add_newlines()
         # schedule.every().day.at("19:39").do(self.daily_task)
         while self.running:
@@ -133,23 +148,9 @@ class DailyWallpaperChanger:
             self.delete_wallpaper()
             self.set_wallpaper(new_image_path)
             time.sleep(5)
-
 # Example usage:
 if __name__ == "__main__":
-    print("""  ___              _   _  __           ____            _    _              
- / _ \ _   _  ___ | |_(_)/ _|_   _    |  _ \  ___  ___| | _| |_ ___  _ __  
-| | | | | | |/ _ \| __| | |_| | | |   | | | |/ _ \/ __| |/ / __/ _ \| '_ \ 
-| |_| | |_| | (_) | |_| |  _| |_| |   | |_| |  __/\__ \   <| || (_) | |_) |
- \__\_\\__,_|\___/ \__|_|_|  \__, |___|____/ \___||___/_|\_\\__\___/| .__/ 
-                             |___/_____|                            |_|    
-""")
-    print('Hello, welcome to quotify_desktop we just need to setup a few of your prefrences before we start.')
-    wallpaper_path = input('Please give the path of the background image you would like to use:')
-    quote_topic = input('Please give the topic or subject would you like the quotes to be on:')
-    text_color = input('Please give the color you would like the text to be (blue, red, green, white, random):')
-    chosen_corner = input('Please give the location on the screen in which you would like the text (top-left, top-right, bottom-left, bottom-right, random):')
-    time_frequency = input('Please give the time each day you would like to refresh the quote (00:00):')
-    app = DailyWallpaperChanger('asadasd', '/Users/edenphillips/Downloads/f4e56a94f2e39a593ab7b170129f1925.jpg', chosen_corner,text_color)
+    app = DailyWallpaperChanger()
     app.start()
     stop_input = input("Type 'stop' to stop the wallpaper changer from running: ")
     if stop_input.lower() == "stop":
