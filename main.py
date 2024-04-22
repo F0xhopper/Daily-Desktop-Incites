@@ -1,5 +1,6 @@
 
 import os
+
 import random
 import schedule
 import subprocess
@@ -7,7 +8,7 @@ import time
 from PIL import Image, ImageDraw, ImageFont
 from openai import OpenAI
 import tkinter as tk
-from tkinter import PhotoImage
+from tkinter import PhotoImage,filedialog
 class DailyWallpaperChanger:
     def __init__(self):
         self.wallpaper = ''
@@ -28,7 +29,7 @@ class DailyWallpaperChanger:
             "Law of Cosines: c² = a² + b² - 2ab cos(C)", 
             "Normal Distribution Probability Density Function: f(x) = (1 / (σ√(2π))) e^(-((x - μ)² / (2σ²)))"
         ]
-        self.running = True
+        self.running = False
 
     def add_newlines(self):
         result_list = []
@@ -45,9 +46,6 @@ class DailyWallpaperChanger:
             result_list.append(new_string)
         self.quotes_to_select_from = result_list
 
-    def stop(self):
-        self.running = False
-        print("Wallpaper changer stopped.")
 
     def get_quotes(self, subject, num_quotes=10):
         response = self.client.completions.create(
@@ -122,77 +120,109 @@ class DailyWallpaperChanger:
         self.delete_wallpaper()
         self.set_wallpaper(new_image_path)
 
-    def handle_gui_input(self, root, wallpaper, topic, color, corner, time_freq):
-        print('bef')
-        self.wallpaper = wallpaper
-        self.quote_topic = topic
-        self.text_color = color
-        self.chosen_corner = corner
-        self.time_frequency = time_freq
-        root.destroy()  # Destroy the window
-        self.add_newlines()
-        print('aft')
-        # You can schedule here if needed
-        while self.running:
-            # schedule.run_pending()
-            quote = random.choice(self.quotes_to_select_from)
-            new_image_path = self.add_quote_to_image(quote)
-            print(new_image_path)
-            self.delete_wallpaper()
-            self.set_wallpaper(new_image_path)
-            time.sleep(20)
+
+    def start_running(self):
+        
+                quote = random.choice(self.quotes_to_select_from)
+                new_image_path = self.add_quote_to_image(quote)
+                print(new_image_path)
+                self.delete_wallpaper()
+                self.set_wallpaper(new_image_path)
+          
+                self.root.after(10000, self.start_running)
+
+
+
 
     def mount_widgets(self):
-        popup = tk.Toplevel()  # Create a popup window
-        popup.title("Quotify Desktop Setup")
+        self.root = tk.Tk()  # Create a normal window
+        self.root.title("Quotify Desktop Setup")
 
+
+        def handle_gui_input():
+            self.wallpaper = wallpaper_entry.get()
+            self.quote_topic = topic_entry.get()
+            self.text_color = color_entry.get()
+            self.chosen_corner = corner_entry.get()
+            self.time_frequency = time_entry.get()
+            self.add_newlines()
+         
+            wallpaper_entry.delete(0, tk.END)
+            for widget in (wallpaper_entry, topic_entry, color_entry, corner_entry, time_entry, 
+                        wallpaper_label, topic_label, color_label, corner_label, time_label,
+                        submit_button,browse_button):
+                widget.grid_forget()  # Remove all widgets including labels and the submit button
+
+            stop_label = tk.Label(frame, text="Thank you for using Quotify_Deskto!!")
+            stop_label.grid(row=6, columnspan=2, pady=(0, 10))  # Place above the stop button
+
+            stop_button = tk.Button(frame, width=20, text="Stop Running")
+            stop_button.grid(row=7, columnspan=2, pady=(0, 20)) 
+            self.root.after(1000, self.start_running)
+
+        def browse_file():
+            filepath = filedialog.askopenfilename(initialdir="/", title="Select a File")
+            if filepath:
+                wallpaper_entry.delete(0, tk.END)
+                wallpaper_entry.insert(0, filepath)
+        def on_entry_click(event, entry):
+                if entry.cget("fg") == "grey":
+                    entry.delete(0, "end")
+                    entry.config(fg="white")
         # Create a frame with padding
-        frame = tk.Frame(popup, padx=60, pady=60)
+        frame = tk.Frame(self.root, padx=60, pady=60)
         frame.pack()
 
         # Load the image
-        title_image = PhotoImage(file="/Users/edenphillips/Desktop/Projects/Quotify_Desktop/Screenshot 2024-04-20 at 21.15.42 (1).png")
+        title_image = tk.PhotoImage(file="/Users/edenphillips/Desktop/Projects/Quotify_Desktop/Screenshot 2024-04-20 at 21.15.42 (1).png")
 
         # Create a label widget to display the image
         title_label = tk.Label(frame, image=title_image)
-        title_label.grid(row=0, columnspan=2, pady=30)
+        title_label.grid(row=0, columnspan=3, pady=30)
 
         wallpaper_label = tk.Label(frame, text="Background Image Path:")
         wallpaper_label.grid(row=1, column=0, sticky="w")
-        wallpaper_entry = tk.Entry(frame, width=40)
+        wallpaper_entry = tk.Entry(frame, width=40, fg="grey")
         wallpaper_entry.grid(row=1, column=1, pady=10)
+        wallpaper_entry.insert(0, "e.g. /images/picture.jpg")
+        wallpaper_entry.bind("<FocusIn>", lambda event, entry=wallpaper_entry: on_entry_click(event, entry))
 
-        topic_label = tk.Label(frame, text="Topic or subject you would like the text to be on (motivation, maths equations, ancient sayings):")
-        topic_label.grid(row=2, column=0, sticky="w")
-        topic_entry = tk.Entry(frame, width=40)
+        # Button to browse and select the image file
+        browse_button = tk.Button(frame, text="Browse", command=browse_file)
+        browse_button.grid(row=1, column=2, pady=10)
+
+        topic_label = tk.Label(frame, justify="left", anchor="w", text="Topic or subject you would like the text to be on:")
+        topic_label.grid(row=2, column=0, sticky="w", padx=(0,10))
+        topic_entry = tk.Entry(frame, width=40, fg="grey")
         topic_entry.grid(row=2, column=1, pady=10)
+        topic_entry.insert(0, "e.g. financial motivation, ancient sayings ")
+        topic_entry.bind("<FocusIn>", lambda event, entry=topic_entry: on_entry_click(event, entry))
 
-        color_label = tk.Label(frame, text="Text Color (red, blue, green, random):")
+        color_label = tk.Label(frame, text="Text Color:")
         color_label.grid(row=3, column=0, sticky="w")
-        color_entry = tk.Entry(frame, width=40)
+        color_entry = tk.Entry(frame, width=40, fg="grey")
         color_entry.grid(row=3, column=1, pady=10)
+        color_entry.insert(0, "e.g. red, random, blue")
+        color_entry.bind("<FocusIn>", lambda event, entry=color_entry: on_entry_click(event, entry))
 
-        corner_label = tk.Label(frame, text="Location of text on screen (top-left, top-right,\n bottom-left, bottom-right):")
-        corner_label.grid(row=4, column=0, sticky="w")
-        corner_entry = tk.Entry(frame, width=40)
+        corner_label = tk.Label(frame, text="Location of text on screen:")
+        corner_label.grid(row=4, column=0, sticky="w", padx=(0,10))
+        corner_entry = tk.Entry(frame, width=40, fg="grey")
         corner_entry.grid(row=4, column=1, pady=10)
+        corner_entry.insert(0, "e.g. bottom-right, top-left, random")
+        corner_entry.bind("<FocusIn>", lambda event, entry=corner_entry: on_entry_click(event, entry))
 
-        time_label = tk.Label(frame, text="Refresh Time (HH:MM):")
+        time_label = tk.Label(frame, text="Refresh Time:")
         time_label.grid(row=5, column=0, sticky="w")
-        time_entry = tk.Entry(frame, width=40)
+        time_entry = tk.Entry(frame, width=40, fg="grey")
         time_entry.grid(row=5, column=1, pady=10)
+        time_entry.insert(0, "e.g. 12:00, 3:00")
+        time_entry.bind("<FocusIn>", lambda event, entry=time_entry: on_entry_click(event, entry))
 
-        submit_button = tk.Button(frame, width=40, text="Start", command=lambda: self.handle_gui_input(
-            popup,
-            wallpaper_entry.get(),
-            topic_entry.get(),
-            color_entry.get(),
-            corner_entry.get(),
-            time_entry.get()
-        ))
+        submit_button = tk.Button(frame, width=40, text="Start", command=handle_gui_input)
         submit_button.grid(row=6, columnspan=2, pady=20)
 
-        popup.mainloop()
+        self.root.mainloop()
 
     def start(self):
         self.mount_widgets()
