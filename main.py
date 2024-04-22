@@ -153,16 +153,19 @@ class DailyWallpaperChanger:
                         submit_button,browse_button):
                 widget.grid_forget()  # Remove all widgets including labels and the submit button
 
-            stop_label = tk.Label(frame, text="Thank you for using Quotify_Deskto!!")
-            stop_label.grid(row=6, columnspan=2, pady=(0, 10))  # Place above the stop button
+            stop_label = tk.Label(frame,font=("Arial", 17), text="Thank you for using Quotify_Desktop!")
+            stop_label.grid(row=6, columnspan=3, pady=(0, 10))  # Place above the stop button
 
             stop_button = tk.Button(frame, width=20, text="Stop Running")
-            stop_button.grid(row=7, columnspan=2, pady=(0, 20)) 
+            stop_button.grid(row=7, columnspan=3, pady=(0, 20)) 
             self.root.after(1000, self.start_running)
 
         def browse_file():
             filepath = filedialog.askopenfilename(initialdir="/", title="Select a File")
             if filepath:
+                if wallpaper_entry.cget("fg") == "grey":
+                    wallpaper_entry.delete(0, "end")
+                    wallpaper_entry.config(fg="white")
                 wallpaper_entry.delete(0, tk.END)
                 wallpaper_entry.insert(0, filepath)
         def on_entry_click(event, entry):
@@ -185,7 +188,7 @@ class DailyWallpaperChanger:
         wallpaper_entry = tk.Entry(frame, width=40, fg="grey")
         wallpaper_entry.grid(row=1, column=1, pady=10)
         wallpaper_entry.insert(0, "e.g. /images/picture.jpg")
-        wallpaper_entry.bind("<FocusIn>", lambda event, entry=wallpaper_entry: on_entry_click(event, entry))
+ 
 
         # Button to browse and select the image file
         browse_button = tk.Button(frame, text="Browse", command=browse_file)
