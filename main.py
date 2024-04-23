@@ -35,7 +35,7 @@ class Quotify_Desktop:
 
     def add_newlines(self):
         """
-        Adds newlines to long quotes to improve readability
+        Adds newlines to long quotes to improve readability, adds new line every 13 words
         """
         result_list = []
         for string in self.quotes_to_select_from:
@@ -96,7 +96,6 @@ class Quotify_Desktop:
         script = f'tell application "Finder" to set desktop picture to POSIX file "{image_path}"'
         try:
             subprocess.run(['osascript', '-e', script], check=True)
-            print("Wallpaper set successfully!")
         except subprocess.CalledProcessError as e:
             print("Error setting wallpaper:", e)
 
@@ -116,7 +115,7 @@ class Quotify_Desktop:
         font_scaling_factor = min(image.width, image.height) / 1000 
         font_size = int(base_font_size * font_scaling_factor) # Adjust font size relative to image size based on scaling factor
         font = ImageFont.truetype("/Library/Fonts/Arial.ttf", font_size)
-        left, top, right, bottom = draw.textbbox((0,0),quote, font=font)
+        left, top, right, bottom = draw.textbbox((0,0),quote, font=font) # Gets corner positions of the text box
         text_width = right - left
         text_height = bottom - top
         image_width, image_height = image.size
@@ -168,6 +167,16 @@ class Quotify_Desktop:
         schedule.every().day.at(self.time_frequency).do(self.daily_task)  
         self.run_pending()
 
+    def handle_stop_application(self):
+        """
+        Handles stopping the application
+        """
+        # Stop any ongoing tasks
+        schedule.clear()
+        # Close the GUI window
+        self.root.destroy()
+        # Restart the application
+        self.start()
 
 
 
@@ -207,7 +216,7 @@ class Quotify_Desktop:
             stop_label.grid(row=6, columnspan=3, pady=(0, 10))  # Place above the stop button
 
             # Display stop button
-            stop_button = tk.Button(frame, width=20, text="Stop Running")
+            stop_button = tk.Button(frame, width=20, text="Stop Running"command=handle_stop_application)
             stop_button.grid(row=7, columnspan=3, pady=(0, 20)) 
             self.root.after(1000, self.start_schedule)
 
