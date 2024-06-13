@@ -14,7 +14,7 @@ Usage
 
 Clone the repository:
 
-git clone https://github.com/yourusername/quotify-desktop
+git clone https://github.com/F0xhopper/quotify-desktop
 cd quotify-desktop
 
 Install the required Python packages:
